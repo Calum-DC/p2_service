@@ -30,7 +30,7 @@ jira_client = JIRA(server=JIRA_URL, basic_auth=(JIRA_EMAIL, JIRA_API_TOKEN))
 def process_sqs_p2_message():
     while True:
         try:
-            # Receive a message from the SQS queue
+            # Receive the message from the SQS queue
             response = sqs_client.receive_message(
                 QueueUrl=QUEUE_URL,
                 MaxNumberOfMessages=1,
@@ -48,11 +48,11 @@ def process_sqs_p2_message():
             print(f"Received message: {message_body}")
 
 
-            title = message_body.get('title', 'No Title')
-            description = message_body.get('description', 'No Description')
+            title = message_body.get('title')
+            description = message_body.get('description')
 
             issue_dict = {
-                'project': {'key': "PMC"},
+                'project': {'key': JIRA_PROJECT_KEY},
                 'summary': title,
                 'description': description,
                 'issuetype': {'name': 'Task'},
@@ -74,8 +74,7 @@ def process_sqs_p2_message():
 
 
 if __name__ == '__main__':
-    # Run the SQS processing function in a separate thread
+    # Run the function in a separate thread
     threading.Thread(target=process_sqs_p2_message, daemon=True).start()
 
-    # Start the Flask app
-    app.run(debug=False)
+    app.run(debug=False, port=5002)
