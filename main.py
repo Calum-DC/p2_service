@@ -18,7 +18,7 @@ load_dotenv()
 sqs_client = boto3.client('sqs', region_name=os.getenv('AWS_REGION'))
 
 
-QUEUE_URL = os.getenv('SQS_P1_URL')
+QUEUE_URL = os.getenv('SQS_P2_URL')
 JIRA_URL = os.getenv('JIRA_URL')
 JIRA_EMAIL = os.getenv('JIRA_EMAIL')
 JIRA_API_TOKEN = os.getenv('JIRA_API_TOKEN')
@@ -28,24 +28,54 @@ jira_client = JIRA(server=JIRA_URL, basic_auth=(JIRA_EMAIL, JIRA_API_TOKEN))
 
 
 def process_sqs_p2_message():
+    while True:
+        try:
+            # Receive a message from the SQS queue
+            response = sqs_client.receive_message(
+                QueueUrl=QUEUE_URL,
+                MaxNumberOfMessages=1,
+                WaitTimeSeconds=10
+            )
 
-    title = "Pre-test 1"
-    description = "Jira create issue functionality.....working??"
+            messages = response.get('Messages', [])
 
-    issue_dict = {
-        'project': {'key': "PMC"},
-        'summary': title,
-        'description': description,
-        'issuetype': {'name': 'Task'},
-    }
+            if not messages:
+                continue
 
-    new_issue = jira_client.create_issue(fields=issue_dict)
+            message = messages[0]
+            receipt_handle = message['ReceiptHandle']
+            message_body = json.loads(message['Body'])
+            print(f"Received message: {message_body}")
 
-    print(f"Issue created: {new_issue.key}")
 
+            title = message_body.get('title', 'No Title')
+            description = message_body.get('description', 'No Description')
+
+            issue_dict = {
+                'project': {'key': "PMC"},
+                'summary': title,
+                'description': description,
+                'issuetype': {'name': 'Task'},
+            }
+
+            new_issue = jira_client.create_issue(fields=issue_dict)
+            print(f"Issue created: {new_issue.key}")
+
+            # Delete the message from the SQS queue after processing
+            sqs_client.delete_message(
+                QueueUrl=QUEUE_URL,
+                ReceiptHandle=receipt_handle
+            )
+            print(f"Message deleted from SQS queue: {receipt_handle}")
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
 
 
 
 if __name__ == '__main__':
-    process_sqs_p2_message()
+    # Run the SQS processing function in a separate thread
+    threading.Thread(target=process_sqs_p2_message, daemon=True).start()
+
+    # Start the Flask app
     app.run(debug=False)
