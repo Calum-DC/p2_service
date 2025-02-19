@@ -1,4 +1,4 @@
-FROM python
+FROM python:3.12-slim
 
 ENV JIRA_URL=""
 ENV JIRA_EMAIL=""

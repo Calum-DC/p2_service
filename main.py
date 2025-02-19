@@ -90,9 +90,3 @@ if __name__ == "__main__":
         stop_flag = True
         bg_thread.join()
 
-
-# if __name__ == '__main__':
-#     # Run the function in a separate thread
-#     threading.Thread(target=process_sqs_p2_message, daemon=True).start()
-
-#     app.run(debug=False, port=5002)
