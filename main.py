@@ -22,7 +22,7 @@ JIRA_EMAIL = os.getenv('JIRA_EMAIL')
 JIRA_API_TOKEN = os.getenv('JIRA_API_TOKEN')
 JIRA_PROJECT_KEY = os.getenv('JIRA_PROJECT_KEY')
 
-jira_client = JIRA(server=JIRA_URL, basic_auth=(JIRA_EMAIL, JIRA_API_TOKEN))
+
 
 stop_flag = False
 
@@ -30,6 +30,7 @@ def process_sqs_p2_message():
     global stop_flag
     while not stop_flag:
         try:
+            jira_client = JIRA(server=JIRA_URL, basic_auth=(JIRA_EMAIL, JIRA_API_TOKEN))
             # Receive the message from the SQS queue
             response = sqs_client.receive_message(
                 QueueUrl=QUEUE_URL,
