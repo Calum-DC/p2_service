@@ -25,4 +25,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           SQS_P2_URL: ${{ secrets.SQS_P2_URL }}
+          jira_client: ${{ secrets.jira_client }}
       run: pytest -v -s
